@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Omnilink</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="brand-card">
+          <p class="eyebrow">OMNILINK</p>
+          <h1>桌面控制台</h1>
+          <p class="muted">为 macOS 与 Windows 设计的本地中继操作端。</p>
+        </div>
+        <nav class="nav-list">
+          <button class="nav-item active" data-view="overview">总览</button>
+          <button class="nav-item" data-view="conversation">会话</button>
+          <button class="nav-item" data-view="logs">日志</button>
+          <button class="nav-item" data-view="settings">设置</button>
+          <button class="nav-item" data-view="about">关于</button>
+        </nav>
+      </aside>
+
+      <main class="main-view">
+        <header class="hero">
+          <div>
+            <p class="eyebrow" id="heroEyebrow">DESKTOP MVP</p>
+            <h2 id="heroTitle">总览</h2>
+            <p id="heroDesc" class="hero-desc">一个跨平台的桌面中继控制台，首版聚焦配置、运行控制、会话与日志。</p>
+          </div>
+          <div class="hero-actions">
+            <button id="openDataDirBtn" class="btn ghost" type="button">打开数据目录</button>
+            <button id="refreshBtn" class="btn primary" type="button">刷新总览</button>
+          </div>
+        </header>
+
+        <section class="view active" id="view-overview">
+          <div class="grid two-col">
+            <article class="card status-card">
+              <div class="card-head">
+                <div>
+                  <h3>运行状态</h3>
+                  <p class="muted">桌面壳通过本地用户目录管理配置、日志和 relay 状态。</p>
+                </div>
+                <span id="statusBadge" class="pill idle">未启动</span>
+              </div>
+              <dl class="kv-grid">
+                <div><dt>模式</dt><dd id="runtimeMode">mock</dd></div>
+                <div><dt>Worker PID</dt><dd id="workerPid">-</dd></div>
+                <div><dt>启动时间</dt><dd id="startedAt">-</dd></div>
+                <div><dt>最近退出码</dt><dd id="lastExitCode">-</dd></div>
+              </dl>
+              <p id="runtimeHint" class="hint">首次启动前，请先保存接入配置。</p>
+              <div class="button-row">
+                <button id="startBtn" class="btn primary" type="button">启动</button>
+                <button id="stopBtn" class="btn danger" type="button">停止</button>
+                <button id="restartBtn" class="btn secondary" type="button">重启</button>
+              </div>
+            </article>
+
+            <article class="card config-card">
+              <div class="card-head">
+                <div>
+                  <h3>接入配置</h3>
+                  <p class="muted">第一版只保留必要接入字段，避免过早引入复杂抽象。</p>
+                </div>
+              </div>
+              <form id="configForm" class="form-grid">
+                <label>
+                  <span>App ID</span>
+                  <input name="appId" type="text" placeholder="app_xxx" />
+                </label>
+                <label>
+                  <span>App Secret</span>
+                  <input name="appSecret" type="password" placeholder="应用密钥" />
+                </label>
+                <label>
+                  <span>Chat ID</span>
+                  <input name="chatId" type="text" placeholder="chat_xxx" />
+                </label>
+                <label>
+                  <span>Codex Command</span>
+                  <input name="codexCommand" type="text" placeholder="codex" />
+                </label>
+                <label class="wide">
+                  <span>Codex Workdir</span>
+                  <input name="codexWorkdir" type="text" placeholder="可留空" />
+                </label>
+                <label class="toggle-row wide">
+                  <input name="autoStartOnLogin" type="checkbox" />
+                  <span>开机自动打开桌面控制台</span>
+                </label>
+              </form>
+              <div class="button-row">
+                <button id="saveConfigBtn" class="btn primary" type="button">保存配置</button>
+              </div>
+              <div id="validationMessage" class="hint">尚未校验配置。</div>
+            </article>
+          </div>
+        </section>
+
+        <section class="view" id="view-conversation">
+          <article class="card tall-card">
+            <div class="card-head">
+              <div>
+                <h3>会话</h3>
+              <p class="muted">当前骨架使用 mock relay 验证消息流、日志流和渲染逻辑。</p>
+              </div>
+            </div>
+            <div id="conversationFeed" class="conversation-feed"></div>
+            <div class="composer">
+              <textarea id="messageInput" rows="3" placeholder="输入一条测试消息。"></textarea>
+              <div class="button-row">
+                <span id="conversationHint" class="hint">Relay 未启动时无法发送。</span>
+                <button id="sendBtn" class="btn primary" type="button">发送消息</button>
+              </div>
+            </div>
+          </article>
+        </section>
+
+        <section class="view" id="view-logs">
+          <article class="card tall-card">
+            <div class="card-head split">
+              <div>
+                <h3>日志</h3>
+                <p class="muted">运行日志与 supervisor 日志分离，避免生命周期操作污染 runtime 输出。</p>
+              </div>
+              <div class="button-row compact">
+                <button class="btn ghost log-tab active" data-log-kind="runtime" type="button">Runtime</button>
+                <button class="btn ghost log-tab" data-log-kind="supervisor" type="button">Supervisor</button>
+              </div>
+            </div>
+            <pre id="logOutput" class="log-output"></pre>
+          </article>
+        </section>
+
+        <section class="view" id="view-settings">
+          <article class="card">
+            <div class="card-head">
+              <div>
+                <h3>设置原则</h3>
+                <p class="muted">这个公开项目优先保持边界清晰，而不是预埋复杂扩展能力。</p>
+              </div>
+            </div>
+            <ul class="bullet-list">
+              <li>当前仓库保持单通道模型，不引入 provider 切换。</li>
+              <li>所有可变状态都写到用户数据目录，不写进应用包。</li>
+              <li>跨平台差异保留在主进程，不暴露到 renderer。</li>
+              <li>当前 mock runtime 只是公开版占位，后续替换成真实 worker。</li>
+            </ul>
+          </article>
+        </section>
+
+        <section class="view" id="view-about">
+          <article class="card">
+            <div class="card-head">
+              <div>
+                <h3>项目信息</h3>
+                <p class="muted">开源版先提供一个可运行的桌面外壳，保证目录、接口和数据模型清晰。</p>
+              </div>
+            </div>
+            <dl class="kv-grid">
+              <div><dt>应用名</dt><dd id="appName">-</dd></div>
+              <div><dt>版本</dt><dd id="appVersion">-</dd></div>
+              <div><dt>平台</dt><dd id="appPlatform">-</dd></div>
+              <div><dt>用户目录</dt><dd id="userDataPath">-</dd></div>
+              <div class="wide"><dt>数据目录</dt><dd id="dataRootPath">-</dd></div>
+            </dl>
+          </article>
+        </section>
+      </main>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>
